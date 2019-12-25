@@ -25,7 +25,7 @@ databytes=b''
 for i in data:
     databytes =databytes + struct.pack('B',i)
 while True:
-    time.sleep(1)
+    time.sleep(0.001)
     print('we are sending ')
 
     if not msg:

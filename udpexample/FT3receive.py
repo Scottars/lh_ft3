@@ -7,13 +7,14 @@ import sys,random
 
 import numpy as np
 from udpexample.udpserver import Ui_Dialog
-
-import matplotlib,time
-matplotlib.use("Qt5Agg")  # 声明使用QT5
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
+import time
+# import matplotlib,time
+# matplotlib.use("Qt5Agg")  # 声明使用QT5
+# from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+# from matplotlib.figure import Figure
+# import matplotlib.pyplot as plt
 import socket
+import copy
 global flagthreadstop
 flagthreadstop=False
 global msg
@@ -44,7 +45,7 @@ class WorkThread(QThread):
                 global msg
                 msg, addr =self.udp_server_client.recvfrom(BUFSIZE)
                 # print("recv", msg, addr)
-                self.trigger.emit()
+                # self.trigger.emit()
 
 
 
@@ -71,20 +72,21 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
     def receivestart(self):
         global flagthreadstop
         flagthreadstop=False
+        msgcopy=copy.deepcopy(msg)
         #模拟数字
-        moni_shuzi=msg[0]
+        moni_shuzi=msgcopy[0]
         #通道号
-        tongdaohao=msg[1]
+        tongdaohao=msgcopy[1]
         #采样点数
-        caiyangdian=struct.unpack('!h',msg[2:4])
-        #报文长度
+        caiyangdian=struct.unpack('!h',msgcopy[2:4])
+        #报文长度i
         baowenchangdu=msg[4]
         #超时表示
-        chaoshi=msg[5]
+        chaoshi=msgcopy[5]
         #crc校验
-        crcjiaoyan=struct.unpack('!h',msg[6:8])
+        crcjiaoyan=struct.unpack('!h',msgcopy[6:8])
         #b包的序号
-        baoxuhao=struct.unpack('!i',msg[8:12])
+        baoxuhao=struct.unpack('!i',msgcopy[8:12])
         #启动一个线程tcp服务器线程
         print('触发了信号')
         # print(msg)
@@ -99,10 +101,10 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
         dataall=''
         for i in range(caiyangdian[0]):  #总共有12个点
 
-            data= msg[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
+            data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
 
             time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
-            print(time)
+            # print(time)
             zhentou=str(hex(data[4]))+':'+str(hex(data[5]))+'\n'
             a=''
             for i in (data[6:24]):
@@ -130,8 +132,12 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
         print('执行C物体停止功能开始')
 
         self.workThread=WorkThread()  #实例化一个线程对象
-        self.workThread.trigger.connect(self.receivestart)  #链接你执行完这个线程之后的想要触发的 函数的名字
+        # self.workThread.trigger.connect(self.receivestart)  #链接你执行完这个线程之后的想要触发的 函数的名字
         self.workThread.start()  #这个就是启动你的想要执行额线程，注意这个是start 而不是run
+
+        self.timer = QTimer(self) #初始化一个定时器
+        self.timer.timeout.connect(self.receivestart) #计时结束调用operate()方法
+        self.timer.start(1) #设置计时间隔并启动
 
 
         print('两个线程是否同步')
