@@ -10,7 +10,9 @@ msg = '01:00:00:0c:4e:00:00:00:00:00:12:e5:54:ca:1c:9b:05:64:00:0e:00:00:01:d2:0
 
 
 #
+# ip_port = ('192.168.0.3', 32768)
 ip_port = ('127.0.0.1', 44233)
+
 BUFSIZE = 1024
 udp_server_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 

@@ -27,8 +27,9 @@ class WorkThread(QThread):
     def run(self):
         #这一部分就可以写入你想要执行的代码就好
         # print('开始执行了run')
-
-        self.ip_port = ('127.0.0.1', 44233)
+        self.ip_port = ('192.168.0.3', 32768)
+        #
+        # self.ip_port = ('127.0.0.1', 44233)
         BUFSIZE = 1024
         self.udp_server_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -73,58 +74,124 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
         global flagthreadstop
         flagthreadstop=False
         msgcopy=copy.deepcopy(msg)
-        #模拟数字
-        moni_shuzi=msgcopy[0]
-        #通道号
-        tongdaohao=msgcopy[1]
-        #采样点数
-        caiyangdian=struct.unpack('!h',msgcopy[2:4])
-        #报文长度i
-        baowenchangdu=msg[4]
-        #超时表示
-        chaoshi=msgcopy[5]
-        #crc校验
-        crcjiaoyan=struct.unpack('!h',msgcopy[6:8])
-        #b包的序号
-        baoxuhao=struct.unpack('!i',msgcopy[8:12])
-        #启动一个线程tcp服务器线程
-        print('触发了信号')
-        # print(msg)
-        self.textBrowser.setText(str(moni_shuzi))
-        self.textBrowser_2.setText(str(tongdaohao))
-        self.textBrowser_3.setText(str(caiyangdian[0]))
-        self.textBrowser_4.setText(str(baowenchangdu))
-        self.textBrowser_5.setText(str(chaoshi))
-        self.textBrowser_6.setText(str(crcjiaoyan[0]))
-        self.textBrowser_7.setText(str(baoxuhao[0]))
+        if len(msgcopy)<10:
+            pass
+        else:
+            #模拟数字
+            moni_shuzi=msgcopy[0]
+            #通道号
+            tongdaohao=msgcopy[1]
+            #采样点数
+            caiyangdian=struct.unpack('!h',msgcopy[2:4])
+            #报文长度i
+            baowenchangdu=msg[4]
+            #超时表示
+            chaoshi=msgcopy[5]
+            #crc校验
+            crcjiaoyan=struct.unpack('!h',msgcopy[6:8])
+            #b包的序号
+            baoxuhao=struct.unpack('!i',msgcopy[8:12])
+            #启动一个线程tcp服务器线程
+            print('触发了信号')
+            # print(msg)
+            self.textBrowser.setText(str(moni_shuzi))
+            self.textBrowser_2.setText(str(tongdaohao))
+            self.textBrowser_3.setText(str(caiyangdian[0]))
+            self.textBrowser_4.setText(str(baowenchangdu))
+            self.textBrowser_5.setText(str(chaoshi))
+            self.textBrowser_6.setText(str(crcjiaoyan[0]))
+            self.textBrowser_7.setText(str(baoxuhao[0]))
+            if moni_shuzi== 0:   #数字量  数据格式为:缓冲数据的师表+帧头+数据
+                print('we are receiving 数字量')
 
-        dataall=''
-        for i in range(caiyangdian[0]):  #总共有12个点
+                dataall=''
+                for i in range(caiyangdian[0]):  #总共有12个点
 
-            data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
+                    data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
 
-            time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
-            # print(time)
-            zhentou=str(hex(data[4]))+':'+str(hex(data[5]))+'\n'
-            a=''
-            for i in (data[6:24]):
-                a = a+str(hex(i))+':'
-            a= a + '\n'
-            for i in (data[24:42]):
-                a = a+str(hex(i))+':'
-            a= a + '\n'
-            for i in (data[42:60]):
-                a = a+str(hex(i))+':'
-            a= a + '\n'
-            for i in (data[60:78]):
-                a = a+str(hex(i))+':'
-            a1=time+zhentou+a+'\n'
-            dataall = dataall + a1
+                    time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
+                    # print(time)
+                    zhentou=str(hex(data[4]))+':'+str(hex(data[5]))+'\n'
+                    a=''
+                    for i in (data[6:24]):
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a= a + '\n'
+                    for i in (data[24:42]):
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a= a + '\n'
+                    for i in (data[42:60]):
+
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a= a + '\n'
+                    for i in (data[60:78]):
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a1=time+zhentou+a+'\n'
+                    dataall = dataall + a1
+
+                self.textBrowser_8.setText(dataall)
 
 
+                pass
+            elif moni_shuzi==1:   #GPIB  数据格式为:缓冲数据的师表+序号+数据 :这个时候没有帧头了
+                print('we are receiving GPIB')
 
+                dataall=''
+                for i in range(caiyangdian[0]):  #总共有12个点
+                    #数据:
+                    data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
+                    #时间标签
+                    time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
+                    # print(time)
+                    #4位的序号的长度+4个字节
+                    xuhao=str(hex(data[4]))+':'+str(hex(data[5]))+':'+str(hex(data[6]))+':'+str(hex(data[7]))+'\n'
 
-        self.textBrowser_8.setText(dataall)
+                    a=''
+                    for i in (data[7:]):
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a= a + '\n'
+
+                    a1=time+xuhao+a+'\n'
+                    dataall = dataall + a1
+
+                    pass
+            elif moni_shuzi == 2:
+                print('we are receiving AD')
+                for i in range(caiyangdian[0]):  #总共有12个点
+
+                    data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
+
+                    time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
+                    # print(time)
+                    # zhentou=str(hex(data[4]))+':'+str(hex(data[5]))+'\n'
+                    a=''
+                    for i in (data[3:]):
+                        if i >16:
+                            a = a + str(hex(i))[2:]+':'
+                        else:
+                            a = a + '0' + str(hex(i))[2:]+':'
+                    a= a + '\n'
+
+                    a1=time+a+'\n'
+                    dataall = dataall + a1
+
+                self.textBrowser_8.setText(dataall)
+
+        pass
 
 
         pass
@@ -155,6 +222,7 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
         global flagthreadstop
 
         flagthreadstop=True
+        self.timer.stop()
 
     pass
 
