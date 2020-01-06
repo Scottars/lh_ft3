@@ -28,8 +28,8 @@ class WorkThread(QThread):
         #这一部分就可以写入你想要执行的代码就好
         # print('开始执行了run')
         self.ip_port = ('192.168.0.3', 32768)
-        #
-        # self.ip_port = ('127.0.0.1', 44233)
+
+        #self.ip_port = ('127.0.0.1', 44233)
         BUFSIZE = 1024
         self.udp_server_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -44,8 +44,9 @@ class WorkThread(QThread):
 
             else:
                 global msg
+                print('BEFORE')
                 msg, addr =self.udp_server_client.recvfrom(BUFSIZE)
-                # print("recv", msg, addr)
+                print("recv", msg, addr)
                 # self.trigger.emit()
 
 
@@ -94,14 +95,15 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
             #启动一个线程tcp服务器线程
             print('触发了信号')
             # print(msg)
-            self.textBrowser.setText(str(moni_shuzi))
-            self.textBrowser_2.setText(str(tongdaohao))
-            self.textBrowser_3.setText(str(caiyangdian[0]))
-            self.textBrowser_4.setText(str(baowenchangdu))
-            self.textBrowser_5.setText(str(chaoshi))
-            self.textBrowser_6.setText(str(crcjiaoyan[0]))
-            self.textBrowser_7.setText(str(baoxuhao[0]))
+
             if moni_shuzi== 0:   #数字量  数据格式为:缓冲数据的师表+帧头+数据
+                self.textBrowser.setText(str(moni_shuzi))
+                self.textBrowser_2.setText(str(tongdaohao))
+                self.textBrowser_3.setText(str(caiyangdian[0]))
+                self.textBrowser_4.setText(str(baowenchangdu))
+                self.textBrowser_5.setText(str(chaoshi))
+                self.textBrowser_6.setText(str(crcjiaoyan[0]))
+                self.textBrowser_7.setText(str(baoxuhao[0]))
                 print('we are receiving 数字量')
 
                 dataall=''
@@ -145,6 +147,13 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
 
                 pass
             elif moni_shuzi==1:   #GPIB  数据格式为:缓冲数据的师表+序号+数据 :这个时候没有帧头了
+                self.textBrowser_14.setText(str(moni_shuzi))
+                self.textBrowser_16.setText(str(tongdaohao))
+                self.textBrowser_12.setText(str(caiyangdian[0]))
+                self.textBrowser_15.setText(str(baowenchangdu))
+                self.textBrowser_11.setText(str(chaoshi))
+                self.textBrowser_13.setText(str(crcjiaoyan[0]))
+                self.textBrowser_17.setText(str(baoxuhao[0]))
                 print('we are receiving GPIB')
 
                 dataall=''
@@ -158,38 +167,46 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
                     xuhao=str(hex(data[4]))+':'+str(hex(data[5]))+':'+str(hex(data[6]))+':'+str(hex(data[7]))+'\n'
 
                     a=''
-                    for i in (data[7:]):
+                    for i in (data[8:]):
                         if i >16:
                             a = a + str(hex(i))[2:]+':'
                         else:
                             a = a + '0' + str(hex(i))[2:]+':'
                     a= a + '\n'
 
-                    a1=time+xuhao+a+'\n'
+                    a1=time+xuhao+a
                     dataall = dataall + a1
+                self.textBrowser_9.setText(dataall)
 
-                    pass
             elif moni_shuzi == 2:
+                self.textBrowser_19.setText(str(moni_shuzi))
+                self.textBrowser_24.setText(str(tongdaohao))
+                self.textBrowser_21.setText(str(caiyangdian[0]))
+                self.textBrowser_22.setText(str(baowenchangdu))
+                self.textBrowser_20.setText(str(chaoshi))
+                self.textBrowser_23.setText(str(crcjiaoyan[0]))
+                self.textBrowser_18.setText(str(baoxuhao[0]))
+                dataall = ''
                 print('we are receiving AD')
-                for i in range(caiyangdian[0]):  #总共有12个点
+                for i in range(caiyangdian[0]): 
 
                     data= msgcopy[12+i*baowenchangdu:12+baowenchangdu*(i+1)]
 
-                    time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'
+                    time= str(hex(data[0]))+':'+str(hex(data[1]))+':'+str(hex(data[2]))+':'+str(hex(data[3]))+':'+'\n'
                     # print(time)
                     # zhentou=str(hex(data[4]))+':'+str(hex(data[5]))+'\n'
                     a=''
-                    for i in (data[3:]):
+                    for i in (data[4:]):
                         if i >16:
                             a = a + str(hex(i))[2:]+':'
                         else:
                             a = a + '0' + str(hex(i))[2:]+':'
                     a= a + '\n'
 
-                    a1=time+a+'\n'
+                    a1=time+a
                     dataall = dataall + a1
 
-                self.textBrowser_8.setText(dataall)
+                self.textBrowser_10.setText(dataall)
 
         pass
 
