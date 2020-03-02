@@ -27,9 +27,9 @@ class WorkThread(QThread):
     def run(self):
         #这一部分就可以写入你想要执行的代码就好
         # print('开始执行了run')
-        self.ip_port = ('192.168.0.3', 32768)
-
-        #self.ip_port = ('127.0.0.1', 44233)
+        # self.ip_port = ('192.168.0.3', 32768)
+        #
+        self.ip_port = ('127.0.0.1', 44233)
         BUFSIZE = 1024
         self.udp_server_client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
@@ -221,7 +221,7 @@ class MainDialogImgBW(QDialog,Ui_Dialog):
 
         self.timer = QTimer(self) #初始化一个定时器
         self.timer.timeout.connect(self.receivestart) #计时结束调用operate()方法
-        self.timer.start(1) #设置计时间隔并启动
+        self.timer.start(1) #设置计时间隔并启动  #单位是ms 为单位
 
 
         print('两个线程是否同步')
